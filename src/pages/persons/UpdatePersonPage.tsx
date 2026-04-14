@@ -14,7 +14,7 @@ export default function UpdatePersonPage() {
     surname: '',
     firstName: '',
     birthDate: '',
-    gender: 'M' as 'M' | 'F' | 'Other',
+    gender: 'M' as 'M' | 'F',
     companyId: '',
   })
   const [,] = useState<Record<string, string>>({})
@@ -37,7 +37,7 @@ export default function UpdatePersonPage() {
         surname: person.surname,
         firstName: person.firstName,
         birthDate: person.birthDate,
-        gender: person.gender,
+        gender: person.gender === 'F' ? 'F' : 'M',
         companyId: person.companyId,
       })
       setPersonFound(true)
@@ -122,7 +122,7 @@ export default function UpdatePersonPage() {
                         onChange={(e) => setPersonId(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         className="input-field flex-1"
-                        placeholder="Enter person ID (e.g., person-1)"
+                        placeholder="Enter surname or numeric person ID"
                       />
                       <button
                         onClick={handleSearch}
@@ -227,7 +227,6 @@ export default function UpdatePersonPage() {
                         >
                           <option value="M">Male</option>
                           <option value="F">Female</option>
-                          <option value="Other">Other</option>
                         </select>
                       </div>
 
@@ -246,7 +245,7 @@ export default function UpdatePersonPage() {
                           placeholder="Enter company ID"
                         />
                         <p className="text-xs text-muted-foreground mt-1">
-                          Available companies: comp-1 through comp-15
+                          Sample companies: 000000001, 000000002, 000000003
                         </p>
                       </div>
                     </div>

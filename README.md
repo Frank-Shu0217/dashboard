@@ -55,6 +55,14 @@ For mock mode, the initial accepted credential is:
 - User ID: `tester1`
 - Password: `p0ssw0rd`
 
+For Spring Boot authentication testing, start `springboot_test` on `http://localhost:8080`, then run:
+
+```bash
+npm run springboot
+```
+
+This disables MSW and enables the backend passkey stub at `/auth/login/passkey`.
+
 Flow:
 
 1. User selects password login

@@ -45,6 +45,8 @@ export interface Company {
   address?: string
   phone?: string
   email?: string
+  contact?: string
+  running?: 'Yes' | 'No'
   createdAt: string
 }
 
@@ -53,6 +55,8 @@ export interface CreateCompanyRequest {
   address?: string
   phone?: string
   email?: string
+  contact?: string
+  running?: 'Yes' | 'No'
 }
 
 export interface UpdateCompanyRequest {
@@ -60,6 +64,16 @@ export interface UpdateCompanyRequest {
   address?: string
   phone?: string
   email?: string
+  contact?: string
+  running?: 'Yes' | 'No'
+}
+
+export interface ReportStatistics {
+  totalPersons: number
+  totalCompanies: number
+  runningCompanies: number
+  stoppedCompanies: number
+  unassignedPersons: number
 }
 
 // API types

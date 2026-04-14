@@ -49,7 +49,7 @@ export function useAuth() {
   const authenticate = useCallback(async (): Promise<AuthResult> => {
     setIsLoading(true)
     try {
-      if (env.ENABLE_MOCKS) {
+      if (env.ENABLE_MOCKS || env.USE_PASSKEY_STUB) {
         const { data } = await apiClient.post('/auth/login/passkey')
         login(data.user, data.accessToken)
         return { success: true }

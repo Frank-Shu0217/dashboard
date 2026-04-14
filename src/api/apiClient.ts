@@ -44,7 +44,10 @@ apiClient.interceptors.response.use(
         const response = await axios.post<{ accessToken: string; user?: unknown }>(
           refreshUrl,
           {},
-          { withCredentials: true }
+          {
+            withCredentials: true,
+            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+          }
         )
 
         const newToken = response.data.accessToken

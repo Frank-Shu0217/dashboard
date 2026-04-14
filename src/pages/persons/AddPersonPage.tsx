@@ -11,7 +11,7 @@ export default function AddPersonPage() {
     surname: '',
     firstName: '',
     birthDate: '',
-    gender: 'M' as 'M' | 'F' | 'Other',
+    gender: 'M' as 'M' | 'F',
     companyId: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -28,8 +28,8 @@ export default function AddPersonPage() {
     if (!formData.birthDate) {
       newErrors.birthDate = 'Birth date is required'
     }
-    if (!formData.companyId) {
-      newErrors.companyId = 'Company is required'
+    if (!/^\d{9}$/.test(formData.companyId)) {
+      newErrors.companyId = 'Company ID must be 9 digits'
     }
     
     setErrors(newErrors)
@@ -171,7 +171,6 @@ export default function AddPersonPage() {
                   >
                     <option value="M">Male</option>
                     <option value="F">Female</option>
-                    <option value="Other">Other</option>
                   </select>
                 </div>
 
@@ -187,13 +186,13 @@ export default function AddPersonPage() {
                     value={formData.companyId}
                     onChange={handleChange}
                     className={`input-field ${errors.companyId ? 'border-destructive focus:border-destructive' : ''}`}
-                    placeholder="Enter company ID (e.g., comp-1)"
+                    placeholder="Enter company ID (e.g., 000000001)"
                   />
                   {errors.companyId && (
                     <p className="text-destructive text-sm mt-1">{errors.companyId}</p>
                   )}
                   <p className="text-xs text-muted-foreground mt-1">
-                    Available companies: comp-1 through comp-15
+                    Sample companies: 000000001, 000000002, 000000003
                   </p>
                 </div>
               </div>

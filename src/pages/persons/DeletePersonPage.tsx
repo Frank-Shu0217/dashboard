@@ -112,7 +112,7 @@ export default function DeletePersonPage() {
                         onChange={(e) => setPersonId(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         className="input-field flex-1"
-                        placeholder="Enter person ID (e.g., person-1)"
+                        placeholder="Enter surname or numeric person ID"
                       />
                       <button
                         onClick={handleSearch}
