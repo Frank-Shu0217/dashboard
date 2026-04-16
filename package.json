@@ -15,7 +15,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "typecheck": "tsc --noEmit",
     "mock": "VITE_ENABLE_MOCKS=true vite",
-    "springboot": "VITE_ENABLE_MOCKS=false VITE_USE_PASSKEY_STUB=true vite"
+    "springboot": "VITE_ENABLE_MOCKS=false vite"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.2",

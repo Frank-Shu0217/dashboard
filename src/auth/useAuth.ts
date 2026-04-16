@@ -3,7 +3,6 @@ import { startRegistration, startAuthentication } from '@simplewebauthn/browser'
 import { apiClient } from '@api/apiClient'
 import { useSessionStore } from '@session/sessionStore'
 import { normalizeError } from '@errors/error'
-import { env } from '@config/env'
 import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
@@ -31,12 +30,10 @@ export function useAuth() {
       )
 
       const attestation = await startRegistration(optionsJSON)
-      const { data } = await apiClient.post('/auth/register/verify', {
-        email: options.email,
+      await apiClient.post('/auth/register/verify', {
         attestation,
       })
 
-      login(data.user, data.accessToken)
       return { success: true }
     } catch (error) {
       const appError = normalizeError(error)
@@ -49,7 +46,7 @@ export function useAuth() {
   const authenticate = useCallback(async (): Promise<AuthResult> => {
     setIsLoading(true)
     try {
-      if (env.ENABLE_MOCKS || env.USE_PASSKEY_STUB) {
+      if (import.meta.env.VITE_ENABLE_MOCKS !== 'false') {
         const { data } = await apiClient.post('/auth/login/passkey')
         login(data.user, data.accessToken)
         return { success: true }

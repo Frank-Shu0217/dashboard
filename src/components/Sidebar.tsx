@@ -9,6 +9,7 @@ import {
   Search,
   Plus,
   Edit,
+  KeyRound,
   Trash2,
 } from 'lucide-react'
 
@@ -52,6 +53,7 @@ const menuItems: MenuItem[] = [
     ],
   },
   { to: '/dashboard/report', icon: FileText, label: 'Report' },
+  { to: '/dashboard/security', icon: KeyRound, label: 'Security' },
 ]
 
 function MenuItemComponent({

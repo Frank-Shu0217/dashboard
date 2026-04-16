@@ -10,6 +10,7 @@ const LoginErrorPage = lazy(() => import('@/pages/LoginErrorPage'))
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'))
+const SecurityPage = lazy(() => import('@/pages/SecurityPage'))
 const GetPersonsPage = lazy(() => import('@/pages/persons/GetPersonsPage'))
 const AddPersonPage = lazy(() => import('@/pages/persons/AddPersonPage'))
 const UpdatePersonPage = lazy(() => import('@/pages/persons/UpdatePersonPage'))
@@ -66,6 +67,7 @@ export const router = createBrowserRouter([
       { path: 'company/update', element: withSuspense(UpdateCompanyPage) },
       { path: 'company/delete', element: withSuspense(DeleteCompanyPage) },
       { path: 'report', element: withSuspense(ReportsPage) },
+      { path: 'security', element: withSuspense(SecurityPage) },
     ],
   },
   {

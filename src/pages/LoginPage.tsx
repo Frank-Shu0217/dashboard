@@ -97,6 +97,9 @@ export default function LoginPage() {
   const handlePasswordLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const loginForm = e.currentTarget
+    const formData = new FormData(loginForm)
+    const submittedUsername = String(formData.get('username') ?? username).trim()
+    const submittedPassword = String(formData.get('password') ?? password)
 
     if (passwordLocked) {
       navigate('/error/login')
@@ -109,13 +112,14 @@ export default function LoginPage() {
 
     try {
       const response = await apiClient.post('/auth/login/password', {
-        username,
-        password,
+        username: submittedUsername,
+        password: submittedPassword,
       })
 
       const { user, accessToken } = response.data
+      setUsername(submittedUsername)
       if (rememberUserId) {
-        writeRememberedUserId(username)
+        writeRememberedUserId(submittedUsername)
       } else {
         removeRememberedUserId()
       }
@@ -249,7 +253,6 @@ export default function LoginPage() {
               type={isPasswordVisible ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
               autoComplete="current-password"
               className="input-field pl-10 pr-12"
               required
