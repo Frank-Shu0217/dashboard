@@ -55,13 +55,32 @@ For mock mode, the initial accepted credential is:
 - User ID: `tester1`
 - Password: `p0ssw0rd`
 
-For Spring Boot authentication testing, start `springboot_test` on `http://localhost:8080`, then run:
+For Spring Boot authentication testing, start `springboot_test` on `http://macbookserver.dev:8080`, then run:
 
 ```bash
 npm run springboot
 ```
 
-This disables MSW and enables the backend passkey stub at `/auth/login/passkey`.
+Passkey testing with `macbookserver.dev` needs HTTPS because browsers do not treat non-localhost HTTP origins as secure contexts. A local certificate is expected at:
+
+```text
+certs/macbookserver.dev.pem
+certs/macbookserver.dev-key.pem
+```
+
+Run the HTTPS dev server with:
+
+```bash
+npm run springboot:https
+```
+
+Then open:
+
+```text
+https://macbookserver.dev:3000
+```
+
+If Chrome shows a certificate warning, accept it for local development before creating a passkey.
 
 Flow:
 

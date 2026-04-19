@@ -8,12 +8,14 @@ interface SessionState {
   accessToken: string | null
   isAuthenticated: boolean
   isLoading: boolean
+  lastActivityAt: number | null
   passwordFailedAttempts: number
   passwordLocked: boolean
   setUser: (user: User | null) => void
   setAccessTokenValue: (accessToken: string | null) => void
   setAuthenticated: (value: boolean) => void
   setLoading: (value: boolean) => void
+  touchActivity: () => void
   login: (user: User, accessToken: string) => void
   recordPasswordFailure: () => number
   resetPasswordFailures: () => void
@@ -27,6 +29,7 @@ export const useSessionStore = create<SessionState>()(
       accessToken: null,
       isAuthenticated: false,
       isLoading: true,
+      lastActivityAt: null,
       passwordFailedAttempts: 0,
       passwordLocked: false,
 
@@ -37,6 +40,7 @@ export const useSessionStore = create<SessionState>()(
       },
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
       setLoading: (isLoading) => set({ isLoading }),
+      touchActivity: () => set({ lastActivityAt: Date.now() }),
 
       login: (user, accessToken) => {
         setAccessToken(accessToken)
@@ -45,6 +49,7 @@ export const useSessionStore = create<SessionState>()(
           accessToken,
           isAuthenticated: true,
           isLoading: false,
+          lastActivityAt: Date.now(),
           passwordFailedAttempts: 0,
           passwordLocked: false,
         })
@@ -73,6 +78,7 @@ export const useSessionStore = create<SessionState>()(
           accessToken: null,
           isAuthenticated: false,
           isLoading: false,
+          lastActivityAt: null,
         })
       },
     }),
@@ -82,6 +88,7 @@ export const useSessionStore = create<SessionState>()(
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
+        lastActivityAt: state.lastActivityAt,
         passwordFailedAttempts: state.passwordFailedAttempts,
         passwordLocked: state.passwordLocked,
       }),

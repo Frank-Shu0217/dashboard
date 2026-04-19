@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@auth/useAuth'
 import { useSessionStore } from '@session/sessionStore'
 import { apiClient } from '@api/apiClient'
+import { AxiosError } from 'axios'
 import { AlertTriangle, Eye, EyeOff, Fingerprint, Loader2, Lock, LogIn, User } from 'lucide-react'
 
 const rememberedUserIdKey = 'dashboard.rememberedUserId'
@@ -10,6 +11,10 @@ const rememberedUserIdKey = 'dashboard.rememberedUserId'
 type PasswordCredentialConstructor = new (form: HTMLFormElement) => Credential
 type WindowWithPasswordCredential = Window & {
   PasswordCredential?: PasswordCredentialConstructor
+}
+type LoginErrorResponse = {
+  code?: string
+  message?: string
 }
 
 function readRememberedUserId() {
@@ -128,29 +133,37 @@ export default function LoginPage() {
       await storePasswordWithBrowser(loginForm)
       navigate('/dashboard')
     } catch (error: unknown) {
-      const nextAttempts = recordPasswordFailure()
-      const message =
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        typeof error.response === 'object' &&
-        error.response !== null &&
-        'data' in error.response &&
-        typeof error.response.data === 'object' &&
-        error.response.data !== null &&
-        'message' in error.response.data
-          ? String(error.response.data.message)
-          : 'Login failed'
+      const axiosError = error as AxiosError<LoginErrorResponse>
+      const status = axiosError.response?.status
+      const code = axiosError.response?.data?.code
+      const isInvalidCredentials = status === 401 && code === 'INVALID_CREDENTIALS'
+      const message = axiosError.response?.data?.message ?? axiosError.message ?? 'Login failed'
 
+      if (!isInvalidCredentials) {
+        console.warn('[password-login] Request failed without consuming an attempt', {
+          status,
+          code,
+          message,
+        })
+        setPasswordError(`${message}. Please retry.`)
+        return
+      }
+
+      const nextAttempts = recordPasswordFailure()
       if (nextAttempts >= 3) {
         navigate('/error/login')
         return
       }
 
-      setPasswordError(`${message}. ${3 - nextAttempts} attempt(s) remaining.`)
+      setPasswordError(message)
     } finally {
       setIsPasswordLoading(false)
     }
+  }
+
+  const handleResetPasswordLock = () => {
+    resetPasswordFailures()
+    setPasswordError(null)
   }
 
   const handlePasskey = async () => {
@@ -286,6 +299,15 @@ export default function LoginPage() {
               <p>{passwordError || 'Password login is locked for this browser session.'}</p>
               {!passwordLocked && remainingAttempts > 0 && (
                 <p className="mt-1 text-red-600">{remainingAttempts} attempt(s) remaining.</p>
+              )}
+              {passwordLocked && (
+                <button
+                  type="button"
+                  className="mt-2 font-medium underline underline-offset-4"
+                  onClick={handleResetPasswordLock}
+                >
+                  Reset password login lock
+                </button>
               )}
             </div>
           </div>

@@ -1,13 +1,40 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { apiClient } from '@api/apiClient'
 import { useAuth } from '@auth/useAuth'
 import { useUser } from '@session/sessionStore'
-import { Check, KeyRound, Loader2, ShieldCheck } from 'lucide-react'
+import { Check, KeyRound, Loader2, ShieldCheck, Trash2 } from 'lucide-react'
+
+interface PasskeySummary {
+  credentialId: string
+  createdAt: string
+  lastUsedAt: string
+  signatureCount: number
+}
 
 export default function SecurityPage() {
   const user = useUser()
   const { register, isLoading } = useAuth()
+  const [passkeys, setPasskeys] = useState<PasskeySummary[]>([])
+  const [isPasskeysLoading, setIsPasskeysLoading] = useState(false)
+  const [deletingCredentialId, setDeletingCredentialId] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const loadPasskeys = useCallback(async () => {
+    setIsPasskeysLoading(true)
+    try {
+      const { data } = await apiClient.get<{ passkeys: PasskeySummary[] }>('/auth/passkeys')
+      setPasskeys(data.passkeys)
+    } catch {
+      setPasskeys([])
+    } finally {
+      setIsPasskeysLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadPasskeys()
+  }, [loadPasskeys])
 
   const handleCreatePasskey = async () => {
     if (!user?.email) {
@@ -20,10 +47,31 @@ export default function SecurityPage() {
     const result = await register({ email: user.email })
     if (result.success) {
       setMessage('Passkey created for this account.')
+      await loadPasskeys()
       return
     }
 
     setError(result.error || 'Passkey registration failed.')
+  }
+
+  const handleDeletePasskey = async (credentialId: string) => {
+    const confirmed = window.confirm('Delete this passkey from the backend credential store?')
+    if (!confirmed) {
+      return
+    }
+
+    setMessage(null)
+    setError(null)
+    setDeletingCredentialId(credentialId)
+    try {
+      await apiClient.delete(`/auth/passkeys/${encodeURIComponent(credentialId)}`)
+      setMessage('Passkey deleted from the backend credential store.')
+      await loadPasskeys()
+    } catch {
+      setError('Passkey deletion failed.')
+    } finally {
+      setDeletingCredentialId(null)
+    }
   }
 
   return (
@@ -80,6 +128,62 @@ export default function SecurityPage() {
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
               Create passkey
             </button>
+          </div>
+
+          <div className="mt-6 border-t border-border pt-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="font-medium">Registered passkeys</h3>
+                <p className="text-sm text-muted-foreground">
+                  {passkeys.length} passkey{passkeys.length === 1 ? '' : 's'} registered for this account.
+                </p>
+              </div>
+              {isPasskeysLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
+
+            {passkeys.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+                No passkey has been registered yet.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {passkeys.map((passkey) => (
+                  <div key={passkey.credentialId} className="rounded-lg border border-border px-4 py-3 text-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium">Passkey</p>
+                        <p className="mt-1 break-all text-xs text-muted-foreground">{passkey.credentialId}</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="rounded-md bg-brand/10 px-2 py-1 text-xs font-medium text-brand">
+                          Active
+                        </span>
+                        <button
+                          type="button"
+                          className="btn-secondary px-2 py-1 text-xs text-destructive"
+                          disabled={deletingCredentialId === passkey.credentialId}
+                          onClick={() => handleDeletePasskey(passkey.credentialId)}
+                        >
+                          {deletingCredentialId === passkey.credentialId ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5" />
+                          )}
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+                      <p>Created: {new Date(passkey.createdAt).toLocaleString()}</p>
+                      <p>
+                        Last used:{' '}
+                        {passkey.lastUsedAt ? new Date(passkey.lastUsedAt).toLocaleString() : 'Not used yet'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

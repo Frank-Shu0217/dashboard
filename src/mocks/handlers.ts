@@ -25,6 +25,15 @@ const authUsersByToken = {
   'mock-refreshed-token': passkeyUser,
 } as const
 
+let mockPasskeys = [
+  {
+    credentialId: 'mock-passkey-credential-id',
+    createdAt: new Date().toISOString(),
+    lastUsedAt: '',
+    signatureCount: 0,
+  },
+]
+
 function getAuthenticatedUser(request: Request) {
   const header = request.headers.get('authorization')
   const token = header?.replace('Bearer ', '') ?? ''
@@ -97,7 +106,7 @@ export const handlers = [
       challenge: 'mock-challenge-base64',
       rp: {
         name: 'Dashboard',
-        id: 'localhost',
+        id: 'macbookserver.dev',
       },
       user: {
         id: 'user-id',
@@ -123,10 +132,50 @@ export const handlers = [
     })
   }),
 
+  http.get('/auth/passkeys', async ({ request }) => {
+    const user = getAuthenticatedUser(request)
+
+    if (!user) {
+      return HttpResponse.json(
+        { code: 'UNAUTHORIZED', message: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    return HttpResponse.json({
+      passkeys: mockPasskeys,
+      count: mockPasskeys.length,
+    })
+  }),
+
+  http.delete('/auth/passkeys/:credentialId', async ({ request, params }) => {
+    const user = getAuthenticatedUser(request)
+
+    if (!user) {
+      return HttpResponse.json(
+        { code: 'UNAUTHORIZED', message: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    const credentialId = String(params.credentialId)
+    const initialCount = mockPasskeys.length
+    mockPasskeys = mockPasskeys.filter((passkey) => passkey.credentialId !== credentialId)
+
+    if (mockPasskeys.length === initialCount) {
+      return HttpResponse.json(
+        { code: 'PASSKEY_NOT_FOUND', message: 'Passkey was not found for this account' },
+        { status: 401 }
+      )
+    }
+
+    return HttpResponse.json({ success: true })
+  }),
+
   http.post('/auth/login/options', async () => {
     const options: PublicKeyCredentialRequestOptionsJSON = {
       challenge: 'mock-challenge-base64',
-      rpId: 'localhost',
+      rpId: 'macbookserver.dev',
       allowCredentials: [],
       userVerification: 'preferred',
     }
